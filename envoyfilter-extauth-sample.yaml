@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  # This needs adjusted to be the app name
+  name: extauth-sample
+spec:
+  workloadSelector:
+    labels:
+      # This needs adjusted to be the app name
+      app: httpbin
+ 
+  # Patch the envoy configuration
+  configPatches:
+ 
+  # Adds the ext_authz HTTP filter for the ext_authz API
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        name: virtualInbound
+        filterChain:
+          filter:
+            name: "envoy.http_connection_manager"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        # Configure the envoy.ext_authz here:
+        name: envoy.ext_authz
+        config:
+          grpc_service:
+            # NOTE: *SHOULD* use envoy_grpc as ext_authz can use dynamic clusters and has connection pooling
+            google_grpc:
+              target_uri: extauth-grpc-service.istio-system:4000
+              stat_prefix: ext_authz
+            timeout: 0.2s
+          failure_mode_allow: false
+          with_request_body:
+            max_request_bytes: 8192
+            allow_partial_message: true
