@@ -1,0 +1,2 @@
+# istio_ext_authz_filter_sample
+This is one istio_ext_authz_filter_sample
