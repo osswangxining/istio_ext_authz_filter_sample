@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: extauth-grpc-service
+spec:
+  ports:
+  - port: 4000
+    targetPort: 4000
+    protocol: TCP
+    name: grpc
+  selector:
+    app: extauth-grpc-service
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: extauth-grpc-service
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: extauth-grpc-service
+    spec:
+      containers:
+      - name: extauth
+        image: registry.cn-beijing.aliyuncs.com/istio-samples/ext-authz-grpc-service:latest
+        ports:
+          - containerPort: 4000
